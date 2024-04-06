@@ -1,5 +1,6 @@
 package com.example.jetpackcomposeyiutube.screens
 
+import android.os.CancellationSignal.OnCancelListener
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.Arrangement
@@ -59,7 +60,7 @@ import org.json.JSONArray
 import org.json.JSONObject
 
 @Composable
-fun MainCard(currentDay: MutableState<WeatherModel>) {
+fun MainCard(currentDay: MutableState<WeatherModel>, onClickSync: ()-> Unit,onClickSearch: ()-> Unit) {
     Column(
         modifier = Modifier
             .padding(5.dp),
@@ -100,7 +101,7 @@ fun MainCard(currentDay: MutableState<WeatherModel>) {
                     )
                 }
                 Text(
-                    text = "${currentDay.value.city}°C",
+                    text = "${currentDay.value.city}",
                     style = TextStyle(fontSize = 24.sp),
                     color = White
                 )
@@ -123,7 +124,7 @@ fun MainCard(currentDay: MutableState<WeatherModel>) {
                 ) {
                     IconButton(
                         onClick = {
-
+                            onClickSearch.invoke()
                         }) {
                         Icon(
                             painter = painterResource(id = R.drawable.is_search),
@@ -141,7 +142,7 @@ fun MainCard(currentDay: MutableState<WeatherModel>) {
                     )
                     IconButton(
                         onClick = {
-
+                            onClickSync.invoke()
                         }) {
                         Icon(
                             painter = painterResource(id = R.drawable.is_sync),

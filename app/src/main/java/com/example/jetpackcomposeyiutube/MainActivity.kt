@@ -20,6 +20,7 @@ import com.android.volley.Request
 import com.android.volley.toolbox.StringRequest
 import com.android.volley.toolbox.Volley
 import com.example.jetpackcomposeyiutube.data.WeatherModel
+import com.example.jetpackcomposeyiutube.screens.DialogSearch
 import com.example.jetpackcomposeyiutube.screens.ListItem
 import com.example.jetpackcomposeyiutube.screens.MainCard
 import com.example.jetpackcomposeyiutube.screens.TabLayout
@@ -37,6 +38,10 @@ class MainActivity : ComponentActivity() {
                 val daysList = remember {
                     mutableStateOf(listOf<WeatherModel>())
                 }
+                val dialogState = remember {
+                mutableStateOf(false)
+            }
+
                 val currentDay = remember {
                     mutableStateOf(WeatherModel(
                         "",
@@ -50,6 +55,11 @@ class MainActivity : ComponentActivity() {
                     )
                     )
                 }
+                if (dialogState.value){
+                    DialogSearch(dialogState, onSubmit = {
+                        getData(it, this, daysList, currentDay)
+                    })
+                }
                 getData("Khujand", this, daysList, currentDay)
                 Image(
                     painter = painterResource(
@@ -62,7 +72,11 @@ class MainActivity : ComponentActivity() {
                     contentScale = ContentScale.FillBounds,
                 )
                 Column {
-                    MainCard(currentDay)
+                    MainCard(currentDay, onClickSync = {
+                        getData("Khujand", this@MainActivity, daysList, currentDay)
+                    }, onClickSearch = {
+                        dialogState.value = true
+                    })
                     TabLayout(daysList, currentDay)
                 }
             }
@@ -76,7 +90,7 @@ private fun getData(city: String, context: Context,
     val url = "https://api.weatherapi.com/v1/forecast.json?key=$API_KEY" +
             "&q=$city" +
             "&days=" +
-            "3" +
+            "14" +
             "&aqi=no&alerts=no"
 
     val queue = Volley.newRequestQueue(context)
