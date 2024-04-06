@@ -233,10 +233,8 @@ fun TabLayout() {
                     )
                 ) { _, item ->
                     ListItem(item)
-
                 }
             }
         }
     }
 }
-
