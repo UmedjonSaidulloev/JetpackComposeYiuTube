@@ -8,6 +8,9 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.layout.ContentScale
@@ -16,19 +19,25 @@ import androidx.compose.ui.res.stringResource
 import com.android.volley.Request
 import com.android.volley.toolbox.StringRequest
 import com.android.volley.toolbox.Volley
+import com.example.jetpackcomposeyiutube.data.WeatherModel
 import com.example.jetpackcomposeyiutube.screens.ListItem
 import com.example.jetpackcomposeyiutube.screens.MainCard
 import com.example.jetpackcomposeyiutube.screens.TabLayout
 import com.example.jetpackcomposeyiutube.ui.theme.JetpackComposeYiuTubeTheme
+import org.json.JSONException
 import org.json.JSONObject
 
 const val API_KEY = "e5b8b9621b064a22833112600240304"
+
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
             JetpackComposeYiuTubeTheme {
-                getData("Tashkent", this)
+                val daysList = remember {
+                    mutableStateOf(listOf<WeatherModel>())
+                }
+                getData("London", this, daysList)
                 Image(
                     painter = painterResource(
                         id = R.drawable.asosi
@@ -41,27 +50,27 @@ class MainActivity : ComponentActivity() {
                 )
                 Column {
                     MainCard()
-                    TabLayout()
+                    TabLayout(daysList)
                 }
             }
         }
     }
 }
 
-private fun getData(city: String, context: Context) {
+private fun getData(city: String, context: Context, daysList: MutableState<List<WeatherModel>>) {
     val url = "https://api.weatherapi.com/v1/forecast.json?key=$API_KEY" +
             "&q=$city" +
             "&days=" +
-            "1" +
+            "3" +
             "&aqi=no&alerts=no"
 
     val queue = Volley.newRequestQueue(context)
     val sRequest = StringRequest(
         Request.Method.GET,
         url,
-        {
-          response ->
-            Log.d("MyLog", "Response: $response")
+        { response ->
+            val list = getWeatherDays(response)
+            daysList.value = list
 
         },
         {
@@ -69,20 +78,36 @@ private fun getData(city: String, context: Context) {
         }
     )
     queue.add(sRequest)
-//    val queue = Volley.newRequestQueue(context)
-//    val stringRequest = StringRequest(
-//        Request.Method.GET,
-//        url,
-//        {
-//                response->
-//            val obj = JSONObject(response)
-//            state.value = obj.getJSONObject("current").getString("temp_c")
-//        },
-//        {
-//                error->
-//            Log.d("Mylog", "Error $error")
-//        }
-//    )
-//    queue.add(stringRequest)
 }
 
+private fun getWeatherDays(response: String): List<WeatherModel> {
+    if (response.isEmpty()) return listOf()
+    val list = ArrayList<WeatherModel>()
+    val mainObject = JSONObject(response)
+    val city = mainObject.getJSONObject("location").getString("name")
+    val days = mainObject.getJSONObject("forecast").getJSONArray("forecastday")
+
+    for (i in 0 until days.length()) {
+        val item = days[i] as JSONObject
+        list.add(
+            WeatherModel(
+                city,
+                item.getString("date"),
+                "",
+                item.getJSONObject("day").getJSONObject("condition")
+                    .getString("text"),
+                item.getJSONObject("day").getJSONObject("condition")
+                    .getString("icon"),
+                item.getJSONObject("day").getString("maxtemp_c"),
+                item.getJSONObject("day").getString("mintemp_c"),
+                item.getJSONArray("hour").toString()
+            )
+        )
+    }
+    list[0] = list[0].copy(
+        time = mainObject.getJSONObject("current").getString("last_updated"),
+        currentTape = mainObject.getJSONObject("current").getString("temp_c"),
+
+        )
+    return list
+}
