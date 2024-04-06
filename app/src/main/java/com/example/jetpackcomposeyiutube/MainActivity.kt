@@ -37,7 +37,20 @@ class MainActivity : ComponentActivity() {
                 val daysList = remember {
                     mutableStateOf(listOf<WeatherModel>())
                 }
-                getData("London", this, daysList)
+                val currentDay = remember {
+                    mutableStateOf(WeatherModel(
+                        "",
+                        "",
+                        "0.0",
+                        "",
+                        "",
+                        "0.0",
+                        "0.0",
+                        ""
+                    )
+                    )
+                }
+                getData("Khujand", this, daysList, currentDay)
                 Image(
                     painter = painterResource(
                         id = R.drawable.asosi
@@ -49,7 +62,7 @@ class MainActivity : ComponentActivity() {
                     contentScale = ContentScale.FillBounds,
                 )
                 Column {
-                    MainCard()
+                    MainCard(currentDay)
                     TabLayout(daysList)
                 }
             }
@@ -57,7 +70,9 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-private fun getData(city: String, context: Context, daysList: MutableState<List<WeatherModel>>) {
+private fun getData(city: String, context: Context,
+                    daysList: MutableState<List<WeatherModel>>,
+                    currentDay: MutableState<WeatherModel>) {
     val url = "https://api.weatherapi.com/v1/forecast.json?key=$API_KEY" +
             "&q=$city" +
             "&days=" +
@@ -70,7 +85,10 @@ private fun getData(city: String, context: Context, daysList: MutableState<List<
         url,
         { response ->
             val list = getWeatherDays(response)
+            currentDay.value = list[0]
             daysList.value = list
+
+            Log.d("MyLog", "Response: $response")
 
         },
         {
@@ -106,7 +124,7 @@ private fun getWeatherDays(response: String): List<WeatherModel> {
     }
     list[0] = list[0].copy(
         time = mainObject.getJSONObject("current").getString("last_updated"),
-        currentTape = mainObject.getJSONObject("current").getString("temp_c"),
+        currentTemp = mainObject.getJSONObject("current").getString("temp_c"),
 
         )
     return list
