@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialogDefaults.containerColor
 import androidx.compose.material3.BadgeDefaults.containerColor
@@ -178,9 +179,9 @@ fun TabLayout() {
                     )
                 )
             },
-            contentColor = TabRowDefaults.containerColor,
+            //contentColor = TabRowDefaults.containerColor,
             containerColor = BlueLight,
-            //contentColor = White
+            contentColor = White
         )
         {
             tabList.forEachIndexed { index, text ->
@@ -202,6 +203,13 @@ fun TabLayout() {
             state = pagerState,
             modifier = Modifier.weight(1.0f)
         ) { index ->
+            LazyColumn(
+                modifier = Modifier.fillMaxSize()
+            ){
+                items(15){
+                    ListItem()
+                }
+            }
         }
     }
 }
